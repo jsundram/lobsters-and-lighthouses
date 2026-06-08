@@ -3,7 +3,7 @@
 Run with:
     uvx --with jinja2,astral,qrcode python3 build.py
 
-Outputs build/trip-handout.html. NOAA tide responses are cached in data/ so
+Outputs build/trip-handout.html. NOAA tide responses are cached in cache/ so
 subsequent builds for the same date don't re-fetch.
 """
 
@@ -23,7 +23,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 BUILD = ROOT / "build"
-DATA = ROOT / "data"
+CACHE = ROOT / "cache"          # regenerable: NOAA tide fetches
+FONTS = ROOT / "fonts"          # pinned vendored assets: JetBrains Mono TTFs
 TEMPLATE = ROOT / "template.html.j2"
 OUTPUT = BUILD / "trip-handout.html"
 
@@ -56,19 +57,19 @@ NOAA_URL = (
 def fetch_tides(station_id: int, date: dt.date, *, force: bool = False) -> list[dict]:
     """Return list of {t: 'YYYY-MM-DD HH:MM', v: '8.5', type: 'H'|'L'}.
 
-    Cached in data/tides_<station>_<YYYYMMDD>.json. Pass force=True to refetch.
+    Cached in cache/tides_<station>_<YYYYMMDD>.json. Pass force=True to refetch.
     """
-    DATA.mkdir(exist_ok=True)
-    cache = DATA / f"tides_{station_id}_{date:%Y%m%d}.json"
-    if cache.exists() and not force:
-        return json.loads(cache.read_text())["predictions"]
+    CACHE.mkdir(exist_ok=True)
+    cache_file = CACHE / f"tides_{station_id}_{date:%Y%m%d}.json"
+    if cache_file.exists() and not force:
+        return json.loads(cache_file.read_text())["predictions"]
     url = NOAA_URL.format(s=station_id, d=date.strftime("%Y%m%d"))
     with urllib.request.urlopen(url, timeout=15) as resp:
         body = resp.read().decode()
     payload = json.loads(body)
     if "predictions" not in payload:
         raise RuntimeError(f"NOAA response missing predictions: {payload}")
-    cache.write_text(json.dumps(payload, indent=2))
+    cache_file.write_text(json.dumps(payload, indent=2))
     return payload["predictions"]
 
 
@@ -76,7 +77,7 @@ def fetch_tides(station_id: int, date: dt.date, *, force: bool = False) -> list[
 # Webfont embedding (so Chromium's PDF backend doesn't fall back on SVG text)
 # ---------------------------------------------------------------------------
 
-# JetBrains Mono TTFs are checked into data/ so the build has no runtime
+# JetBrains Mono TTFs are checked into fonts/ so the build has no runtime
 # webfont dependency. We embed them as base64 @font-face because Chromium's
 # PDF generator inconsistently resolves loaded webfonts for inline-SVG <text>
 # elements — even when CSS computed-style says the right thing, the PDF
@@ -90,11 +91,11 @@ JETBRAINS_MONO_TTFS = {
 
 def get_jetbrains_mono_css() -> str:
     """Return @font-face CSS with JetBrains Mono 500 and 700 base64-embedded
-    from data/*.ttf."""
+    from fonts/*.ttf."""
     import base64
     chunks = []
     for weight, fname in JETBRAINS_MONO_TTFS.items():
-        ttf_bytes = (DATA / fname).read_bytes()
+        ttf_bytes = (FONTS / fname).read_bytes()
         b64 = base64.b64encode(ttf_bytes).decode("ascii")
         chunks.append(
             "@font-face {\n"

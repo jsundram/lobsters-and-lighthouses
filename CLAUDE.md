@@ -18,8 +18,10 @@ maine/
 ├── build/
 │   ├── trip-handout.html  # generated output (what you publish to the web)
 │   └── trip-handout.pdf   # generated 2-page letter PDF (front + back of a sheet)
-├── data/
+├── cache/
 │   └── tides_<station>_<YYYYMMDD>.json  # NOAA fetch cache, keyed by date
+├── fonts/
+│   └── JetBrainsMono-{Medium,Bold}.ttf  # pinned vendored TTFs, embedded into CSS at build
 └── .archive/            # superseded files (original CSV, pre-refactor HTML, etc.)
 ```
 
@@ -56,7 +58,7 @@ config.toml ─┐
 stops.toml ──┤
              │      ┌── NOAA API ──┐
              ▼      ▼              │
-            build.py               │ (cached in data/)
+            build.py               │ (cached in cache/)
              │                     │
              │   ┌── astral ────┐  │
              │   ▼              │  │
@@ -84,12 +86,10 @@ What each input controls:
 
 What gets fetched / computed at build time:
 
-- **NOAA tide predictions** for the trip date. Cached in `data/` after first
+- **NOAA tide predictions** for the trip date. Cached in `cache/` after first
   fetch — delete the cache file (or pass `--force-fetch`) to refresh.
 - **Sun times** (sunrise, solar noon, golden hour, sunset, civil dusk, day
   length) via `astral` from the configured lat/lng/tz.
-- **Moon phase** via `astral.moon.phase()` — currently computed but not
-  displayed (was in the chart earlier; removed during a tightening pass).
 - **PDF render** via Playwright (Chromium): the HTML is loaded with
   `media=print`, the running-header strip's position is measured, and the
   largest PDF scale that fits both halves into one letter page each is

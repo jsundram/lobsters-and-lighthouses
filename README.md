@@ -26,7 +26,7 @@ PDF (front + back of a sheet of paper).
 
 The first build pulls a transient `uvx` env with `jinja2`, `astral`,
 `qrcode`, `playwright`, `pypdf`, and `pytest`. NOAA tide responses cache
-in `data/`.
+in `cache/`.
 
 ## Layout
 
@@ -38,7 +38,8 @@ in `data/`.
 | `style.css`       | All visual styling, inlined into the HTML at build time |
 | `build.py`        | Loads data → computes sun/tides/SoC → renders HTML → renders PDF |
 | `test_build.py`   | pytest suite (50 tests, ~3s) |
-| `data/`           | NOAA tide cache + JetBrains Mono TTFs (checked in) |
+| `cache/`          | NOAA tide-fetch cache (regenerable, checked in) |
+| `fonts/`          | JetBrains Mono TTFs (pinned vendored assets) |
 | `build/`          | Output (`trip-handout.html`, `trip-handout.pdf`) — checked in |
 
 ## Changing the trip date

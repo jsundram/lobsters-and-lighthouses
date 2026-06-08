@@ -201,8 +201,8 @@ class TestBattery:
 class TestTideFetch:
     def test_fetch_uses_cache(self, tmp_path, monkeypatch):
         """Confirm that a second fetch call doesn't hit the network."""
-        cache_dir = tmp_path / "data"
-        monkeypatch.setattr(build, "DATA", cache_dir)
+        cache_dir = tmp_path / "cache"
+        monkeypatch.setattr(build, "CACHE", cache_dir)
         cache_dir.mkdir()
         date = dt.date(2026, 6, 8)
         # Seed the cache with known data
@@ -225,7 +225,7 @@ class TestTideFetch:
     def test_fetch_real_june_8_cached(self):
         """Validate the June 8 prediction set (was cached during development)."""
         # This relies on the cache from earlier work
-        cache = build.DATA / "tides_8419399_20260608.json"
+        cache = build.CACHE / "tides_8419399_20260608.json"
         if not cache.exists():
             pytest.skip("June 8 NOAA cache not present")
         preds = json.loads(cache.read_text())["predictions"]
