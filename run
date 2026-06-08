@@ -11,7 +11,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-UVX="uvx --with jinja2 --with astral --with qrcode"
+UVX="uvx --with jinja2 --with astral --with qrcode --with playwright --with pypdf"
 UVX_TEST="$UVX --with pytest"
 
 cmd="${1:-all}"; shift || true

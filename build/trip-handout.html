@@ -560,6 +560,12 @@
     color: var(--ink-soft);
   }
 
+  /* ---------- page 2 running header (print-only) ---------- */
+  /* Hidden on screen. In print: the .page-break wrapper triggers the break */
+  /* and adds top-leadin space to match page 1's .page top padding, so the   */
+  /* running-header's rule lands at the same y as page 1's masthead rule.   */
+  .page-break, .running-header { display: none; }
+
   /* ---------- print ---------- */
   @media print {
     @page {
@@ -579,14 +585,42 @@
       margin: 0;
       box-shadow: none;
       width: 100%;
-      min-height: 100vh;
-      page-break-after: always;
+      padding: 0.3in 0.5in 0.25in;  /* tight to maximize content per page */
     }
-    .page:last-child { page-break-after: auto; }
     .stop { break-inside: avoid; }
+
+    /* Page-2 leadin: wraps the running-header. Forces the page break, then  */
+    /* adds top padding so the running-header's rule lands at the same y     */
+    /* offset as page 1's masthead rule (which has 0.3in of .page padding    */
+    /* above it). Keeps the two pages visually symmetric.                    */
+    .page-break {
+      display: block;
+      page-break-before: always;
+      padding-top: 0.3in;
+      break-inside: avoid;
+    }
+    .running-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      border-top: 3px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      padding: 10px 0;
+      margin-bottom: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      break-inside: avoid;
+    }
+    .running-header .rh-title { color: var(--navy-deep); font-weight: 700; }
+    .running-header .rh-date  { text-align: center; }
+    .running-header .rh-page  { text-align: right; }
   }
 
-  @media (max-width: 900px) {
+  @media screen and (max-width: 900px) {
     .page { width: auto; padding: 24px; margin: 0; }
     .masthead {
       grid-template-columns: 1fr;
@@ -889,281 +923,298 @@
     <h2>The Itinerary</h2>
   </div>
 
-  <div class="timeline">
 
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">10:00 AM</div>
-        <div class="dur">depart</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="18.0" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">100%</span>
-        </div>
+  <div class="timeline">
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">10:00 AM</div>
+      <div class="dur">depart</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="18.0" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">100%</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">00</span>Somerville · Departure</div>
-          <span class="stop-icon car"><svg><use href="#i-car"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=29+Woodbine+St%2C+Somerville%2C+MA+02144" target="_blank" rel="noopener noreferrer">Woodbine St, Somerville, MA</a></div>
-        <div class="stop-note">
-          70 minutes north on I-93 → I-95.
-<span class="restroom">Use restrooms before departure; first stop is Bob&#39;s Clam Hut at 11:10.</span>        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">00</span>Somerville · Departure</div>
+        <span class="stop-icon car"><svg><use href="#i-car"/></svg></span>
       </div>
-      <div class="leg"><span>62 mi · ~70 min</span><span>I-93 → I-95 N → US-1</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">11:10 AM</div>
-        <div class="dur">50 min</div>
-        <div class="dep">→ 12:00 PM</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="13.86" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">77%</span>
-        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=29+Woodbine+St%2C+Somerville%2C+MA+02144" target="_blank" rel="noopener noreferrer">Woodbine St, Somerville, MA</a></div>
+      <div class="stop-note">
+        70 minutes north on I-93 → I-95.
+<span class="restroom">Use restrooms before departure; first stop is Bob&#39;s Clam Hut at 11:10.</span>      </div>
+    </div>
+    <div class="leg"><span>62 mi · ~70 min</span><span>I-93 → I-95 N → US-1</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">11:10 AM</div>
+      <div class="dur">50 min</div>
+      <div class="dep">→ 12:00 PM</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="13.86" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">77%</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">01</span>Bob&#39;s Clam Hut</div>
-          <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bob%27s+Clam+Hut%2C+315+US-1%2C+Kittery%2C+ME+03904" target="_blank" rel="noopener noreferrer">315 US-1, Kittery, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>HOURS</strong> 11 AM – 7 PM</span>
-        </div>
-        <div class="stop-note">
-          1956 clam shack on US-1. Whole-belly fried clams are the headline — Bob&#39;s Way (corn-flour dredge) or Lillian&#39;s Way (egg-milk wash). Onion rings too. Outdoor picnic tables.
-<span class="restroom">Restrooms on site.</span>        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">01</span>Bob&#39;s Clam Hut</div>
+        <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
       </div>
-      <div class="leg"><span>11 mi · ~20 min</span><span>Coastal Rt 1A / 103</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">12:20 PM</div>
-        <div class="dur">30 min</div>
-        <div class="dep">→ 12:50 PM</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="13.14" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">73%</span>
-        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bob%27s+Clam+Hut%2C+315+US-1%2C+Kittery%2C+ME+03904" target="_blank" rel="noopener noreferrer">315 US-1, Kittery, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>HOURS</strong> 11 AM – 7 PM</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">02</span>Nubble Lighthouse</div>
-          <span class="stop-icon lighthouse"><svg><use href="#i-lighthouse"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Nubble+Lighthouse%2C+1+Sohier+Park+Rd%2C+York%2C+ME+03909" target="_blank" rel="noopener noreferrer">Sohier Park · 1 Sohier Park Rd, York, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>OPEN</strong> dawn to dusk</span>
-        </div>
-        <div class="stop-note">
-          Cape Neddick Light on its own islet ten yards offshore. View-only from Sohier Park&#39;s rocky shore.
-<span class="restroom">Restrooms on site.</span>        </div>
+      <div class="stop-note">
+        1956 clam shack on US-1. Whole-belly fried clams are the headline — Bob&#39;s Way (corn-flour dredge) or Lillian&#39;s Way (egg-milk wash). Onion rings too. Outdoor picnic tables.
+<span class="restroom">Restrooms on site.</span>      </div>
+    </div>
+    <div class="leg"><span>11 mi · ~20 min</span><span>Coastal Rt 1A / 103</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">12:20 PM</div>
+      <div class="dur">30 min</div>
+      <div class="dep">→ 12:50 PM</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="13.14" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">73%</span>
       </div>
-      <div class="leg"><span>8 mi · ~25 min</span><span>US-1 / Shore Rd</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">1:15 PM</div>
-        <div class="dur">45 min</div>
-        <div class="dep">→ 2:00 PM</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="12.6" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">70%</span>
-        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">02</span>Nubble Lighthouse</div>
+        <span class="stop-icon lighthouse"><svg><use href="#i-lighthouse"/></svg></span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">03</span>Marginal Way</div>
-          <span class="stop-icon walk"><svg><use href="#i-walk"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Marginal+Way%2C+Ogunquit%2C+ME+03907" target="_blank" rel="noopener noreferrer">Perkins Cove → Shore Rd, Ogunquit, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>LENGTH</strong> 1 mi one-way (2 mi RT)</span>
-          <span><strong>SURFACE</strong> paved cliff path</span>
-        </div>
-        <div class="stop-note">
-          Paved cliff path from Perkins Cove north along the Atlantic. Park at the Perkins Cove lot, shared with Footbridge Lobster. Benches every few hundred yards.
-<span class="restroom">Restrooms at Perkins Cove (next stop).</span>        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Nubble+Lighthouse%2C+1+Sohier+Park+Rd%2C+York%2C+ME+03909" target="_blank" rel="noopener noreferrer">Sohier Park · 1 Sohier Park Rd, York, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>OPEN</strong> dawn to dusk</span>
       </div>
-      <div class="leg"><span>0 mi · walk back</span><span>Same parking lot</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">2:00 PM</div>
-        <div class="dur">50 min</div>
-        <div class="dep">→ 2:50 PM</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="12.6" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">70%</span>
-        </div>
+      <div class="stop-note">
+        Cape Neddick Light on its own islet ten yards offshore. View-only from Sohier Park&#39;s rocky shore.
+<span class="restroom">Restrooms on site.</span>      </div>
+    </div>
+    <div class="leg"><span>8 mi · ~25 min</span><span>US-1 / Shore Rd</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">1:15 PM</div>
+      <div class="dur">45 min</div>
+      <div class="dep">→ 2:00 PM</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="12.6" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">70%</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">04</span>Footbridge Lobster</div>
-          <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Footbridge+Lobster%2C+108+Perkins+Cove+Rd%2C+Ogunquit%2C+ME+03907" target="_blank" rel="noopener noreferrer">108 Perkins Cove Rd, Ogunquit, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>HOURS</strong> 11 AM – 3 PM</span>
-          <span><strong>SEATING</strong> none — eat at the cove</span>
-        </div>
-        <div class="stop-note">
-          Walk-up counter at Perkins Cove, no indoor seating. Order the lobster roll butter-and-mayo combo. Lobster grilled cheese is the hidden gem. Lobster Shack as backup.
-<span class="restroom">Use public restrooms here; none until Sweetcream Dairy at 4:45 PM.</span>        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">03</span>Marginal Way</div>
+        <span class="stop-icon walk"><svg><use href="#i-walk"/></svg></span>
       </div>
-      <div class="leg"><span>25 mi · ~55 min</span><span>US-1 N through Wells &amp; Kennebunk</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">3:45 PM</div>
-        <div class="dur">45 min</div>
-        <div class="dep">→ 4:30 PM</div>
-        <div class="battery bat-hi">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="11.16" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">62%</span>
-        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Marginal+Way%2C+Ogunquit%2C+ME+03907" target="_blank" rel="noopener noreferrer">Perkins Cove → Shore Rd, Ogunquit, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>LENGTH</strong> 1 mi one-way (2 mi RT)</span>
+        <span><strong>SURFACE</strong> paved cliff path</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">05</span>East Point Audubon Sanctuary</div>
-          <span class="stop-icon bird"><svg><use href="#i-bird"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=East+Point+Audubon+Sanctuary%2C+Biddeford+Pool%2C+ME+04005" target="_blank" rel="noopener noreferrer">Lester B. Orcutt Blvd, Biddeford Pool, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>OPEN</strong> dawn to dusk</span>
-          <span><strong>PARKING</strong> roadside; do not block gate</span>
-        </div>
-        <div class="stop-note">
-          30-acre coastal headland at Biddeford Pool. Meadows down to rocky shore, views across Saco Bay to Wood Island Light. Easy 1-mile loop.
-<span class="restroom">No restrooms; next ones at Sweetcream Dairy.</span>        </div>
+      <div class="stop-note">
+        Paved cliff path from Perkins Cove north along the Atlantic. Park at the Perkins Cove lot, shared with Footbridge Lobster. Benches every few hundred yards.
+<span class="restroom">Restrooms at Perkins Cove (next stop).</span>      </div>
+    </div>
+    <div class="leg"><span>0 mi · walk back</span><span>Same parking lot</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">2:00 PM</div>
+      <div class="dur">50 min</div>
+      <div class="dep">→ 2:50 PM</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="12.6" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">70%</span>
       </div>
-      <div class="leg"><span>8 mi · ~15 min</span><span>Inland to downtown Biddeford</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">4:45 PM</div>
-        <div class="dur">35 min</div>
-        <div class="dep">→ 5:20 PM</div>
-        <div class="battery bat-mid">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="10.62" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">59%</span>
-        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">04</span>Footbridge Lobster</div>
+        <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">06</span>Sweetcream Dairy</div>
-          <span class="stop-icon icecream"><svg><use href="#i-icecream"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Sweetcream+Dairy%2C+128+Main+St%2C+Biddeford%2C+ME+04005" target="_blank" rel="noopener noreferrer">128 Main St #101, Biddeford, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>HOURS</strong> 1 – 8 PM</span>
-        </div>
-        <div class="stop-note">
-          Small-batch ice cream in the Pepperell Mills. House favorites: &#39;What the Fluff&#39; (marshmallow + Ritz), burnt sugar toffee, and the eponymous sweetcream.
-<span class="restroom">Restrooms inside.</span>        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Footbridge+Lobster%2C+108+Perkins+Cove+Rd%2C+Ogunquit%2C+ME+03907" target="_blank" rel="noopener noreferrer">108 Perkins Cove Rd, Ogunquit, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>HOURS</strong> 11 AM – 3 PM</span>
+        <span><strong>SEATING</strong> none — eat at the cove</span>
       </div>
-      <div class="leg"><span>20 mi · ~40 min</span><span>I-195 → I-95 N → Rt 77</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">6:00 PM</div>
-        <div class="dur">45 min</div>
-        <div class="dep">→ 6:45 PM</div>
-        <div class="battery bat-mid">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="9.54" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">53%</span>
-        </div>
+      <div class="stop-note">
+        Walk-up counter at Perkins Cove, no indoor seating. Order the lobster roll butter-and-mayo combo. Lobster grilled cheese is the hidden gem. Lobster Shack as backup.
+<span class="restroom">Use public restrooms here; none until Sweetcream Dairy at 4:45 PM.</span>      </div>
+    </div>
+    <div class="leg"><span>25 mi · ~55 min</span><span>US-1 N through Wells &amp; Kennebunk</span></div>
+  </article>
+
+    <div class="page-break" aria-hidden="true">
+      <div class="running-header">
+        <span class="rh-title">Lobsters &amp; Lighthouses</span>
+        <span class="rh-date">Monday, June 22, 2026</span>
+        <span class="rh-page">Page 2 / 2</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">07</span>The Lobster Shack at Two Lights</div>
-          <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=The+Lobster+Shack+at+Two+Lights%2C+225+Two+Lights+Rd%2C+Cape+Elizabeth%2C+ME+04107" target="_blank" rel="noopener noreferrer">225 Two Lights Rd, Cape Elizabeth, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>HOURS</strong> 11 AM – 8 PM</span>
-          <span><strong>SEATING</strong> outdoor picnic tables, ocean view</span>
-        </div>
-        <div class="stop-note">
-          Order at the window, eat on the rocks above the Atlantic. Chowder is the standout; fried clams and strawberry-rhubarb pie also highly rated. Lobster roll opinions are mixed.
-<span class="restroom">Restrooms on site.</span>        </div>
+    </div>
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">3:45 PM</div>
+      <div class="dur">45 min</div>
+      <div class="dep">→ 4:30 PM</div>
+      <div class="battery bat-hi">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="11.16" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">62%</span>
       </div>
-      <div class="leg"><span>6 mi · ~15 min</span><span>Rt 77 north</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">7:00 PM</div>
-        <div class="dur">40 min</div>
-        <div class="dep">→ 7:40 PM</div>
-        <div class="battery bat-mid">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="9.18" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">51%</span>
-        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">05</span>East Point Audubon Sanctuary</div>
+        <span class="stop-icon bird"><svg><use href="#i-bird"/></svg></span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">08</span>Fort Williams Park · Portland Head Light</div>
-          <span class="stop-icon lighthouse"><svg><use href="#i-lighthouse"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Portland+Head+Light%2C+1000+Shore+Rd%2C+Cape+Elizabeth%2C+ME+04107" target="_blank" rel="noopener noreferrer">1000 Shore Rd, Cape Elizabeth, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>OPEN</strong> sunrise to sunset</span>
-          <span><strong>FEE</strong> $6 per vehicle</span>
-          <span><strong>GOLDEN HOUR</strong> 7:43 PM</span>
-        </div>
-        <div class="stop-note">
-          Portland Head Light, Maine&#39;s oldest (1791). Walk the lawn down to the keeper&#39;s house for the iconic view. Pay Parking.
-<span class="restroom">Restrooms on site; next ones at Kennebunk Service Plaza.</span>        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=East+Point+Audubon+Sanctuary%2C+Biddeford+Pool%2C+ME+04005" target="_blank" rel="noopener noreferrer">Lester B. Orcutt Blvd, Biddeford Pool, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>OPEN</strong> dawn to dusk</span>
+        <span><strong>PARKING</strong> roadside; do not block gate</span>
       </div>
-      <div class="leg"><span>22 mi · ~25 min</span><span>I-295 S → I-95 S (Maine Turnpike)</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">8:05 PM</div>
-        <div class="dur">20 min</div>
-        <div class="dep">→ 8:25 PM</div>
-        <div class="battery bat-mid">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="7.74" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">43→77%</span>
-        </div>
+      <div class="stop-note">
+        30-acre coastal headland at Biddeford Pool. Meadows down to rocky shore, views across Saco Bay to Wood Island Light. Easy 1-mile loop.
+<span class="restroom">No restrooms; next ones at Sweetcream Dairy.</span>      </div>
+    </div>
+    <div class="leg"><span>8 mi · ~15 min</span><span>Inland to downtown Biddeford</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">4:45 PM</div>
+      <div class="dur">35 min</div>
+      <div class="dep">→ 5:20 PM</div>
+      <div class="battery bat-mid">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="10.62" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">59%</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">09</span>Kennebunk Service Plaza · Tesla Supercharger</div>
-          <span class="stop-icon charge"><svg><use href="#i-bolt"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Kennebunk+Service+Plaza+Southbound%2C+Maine+Turnpike%2C+Kennebunk%2C+ME+04043" target="_blank" rel="noopener noreferrer">I-95 Southbound · Maine Turnpike Mile 25, Kennebunk, ME</a></div>
-        <div class="stop-meta">
-          <span><strong>POWER</strong> 250 kW V3 · 8 stalls</span>
-          <span><strong>OPEN</strong> 24/7</span>
-        </div>
-        <div class="stop-note">
-          Southbound service plaza, no detour off I-95. ~15 min top-up gets you home.
-<span class="restroom">Restrooms inside. Backup chargers: Portsmouth (25 mi south), Seabrook (37 mi south).</span>        </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">06</span>Sweetcream Dairy</div>
+        <span class="stop-icon icecream"><svg><use href="#i-icecream"/></svg></span>
       </div>
-      <div class="leg"><span>85 mi · ~85 min</span><span>I-95 S → I-93 S → home</span></div>
-    </article>
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">9:50 PM</div>
-        <div class="dur">home</div>
-        <div class="battery bat-mid">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="7.92" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">44%</span>
-        </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Sweetcream+Dairy%2C+128+Main+St%2C+Biddeford%2C+ME+04005" target="_blank" rel="noopener noreferrer">128 Main St #101, Biddeford, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>HOURS</strong> 1 – 8 PM</span>
       </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">10</span>Somerville · Home</div>
-          <span class="stop-icon home"><svg><use href="#i-home"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=29+Woodbine+St%2C+Somerville%2C+MA+02144" target="_blank" rel="noopener noreferrer">Woodbine St, Somerville, MA</a></div>
-        <div class="stop-note">
-          10 stops · 255 miles · 11h 50m door to door.
-        </div>
+      <div class="stop-note">
+        Small-batch ice cream in the Pepperell Mills. House favorites: &#39;What the Fluff&#39; (marshmallow + Ritz), burnt sugar toffee, and the eponymous sweetcream.
+<span class="restroom">Restrooms inside.</span>      </div>
+    </div>
+    <div class="leg"><span>20 mi · ~40 min</span><span>I-195 → I-95 N → Rt 77</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">6:00 PM</div>
+      <div class="dur">45 min</div>
+      <div class="dep">→ 6:45 PM</div>
+      <div class="battery bat-mid">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="9.54" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">53%</span>
       </div>
-    </article>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">07</span>The Lobster Shack at Two Lights</div>
+        <span class="stop-icon food"><svg><use href="#i-lobster"/></svg></span>
+      </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=The+Lobster+Shack+at+Two+Lights%2C+225+Two+Lights+Rd%2C+Cape+Elizabeth%2C+ME+04107" target="_blank" rel="noopener noreferrer">225 Two Lights Rd, Cape Elizabeth, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>HOURS</strong> 11 AM – 8 PM</span>
+        <span><strong>SEATING</strong> outdoor picnic tables, ocean view</span>
+      </div>
+      <div class="stop-note">
+        Order at the window, eat on the rocks above the Atlantic. Chowder is the standout; fried clams and strawberry-rhubarb pie also highly rated. Lobster roll opinions are mixed.
+<span class="restroom">Restrooms on site.</span>      </div>
+    </div>
+    <div class="leg"><span>6 mi · ~15 min</span><span>Rt 77 north</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">7:00 PM</div>
+      <div class="dur">40 min</div>
+      <div class="dep">→ 7:40 PM</div>
+      <div class="battery bat-mid">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="9.18" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">51%</span>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">08</span>Fort Williams Park · Portland Head Light</div>
+        <span class="stop-icon lighthouse"><svg><use href="#i-lighthouse"/></svg></span>
+      </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Portland+Head+Light%2C+1000+Shore+Rd%2C+Cape+Elizabeth%2C+ME+04107" target="_blank" rel="noopener noreferrer">1000 Shore Rd, Cape Elizabeth, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>OPEN</strong> sunrise to sunset</span>
+        <span><strong>FEE</strong> $6 per vehicle</span>
+        <span><strong>GOLDEN HOUR</strong> 7:43 PM</span>
+      </div>
+      <div class="stop-note">
+        Portland Head Light, Maine&#39;s oldest (1791). Walk the lawn down to the keeper&#39;s house for the iconic view. Pay Parking.
+<span class="restroom">Restrooms on site; next ones at Kennebunk Service Plaza.</span>      </div>
+    </div>
+    <div class="leg"><span>22 mi · ~25 min</span><span>I-295 S → I-95 S (Maine Turnpike)</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">8:05 PM</div>
+      <div class="dur">20 min</div>
+      <div class="dep">→ 8:25 PM</div>
+      <div class="battery bat-mid">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="7.74" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">43→77%</span>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">09</span>Kennebunk Service Plaza · Tesla Supercharger</div>
+        <span class="stop-icon charge"><svg><use href="#i-bolt"/></svg></span>
+      </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=Kennebunk+Service+Plaza+Southbound%2C+Maine+Turnpike%2C+Kennebunk%2C+ME+04043" target="_blank" rel="noopener noreferrer">I-95 Southbound · Maine Turnpike Mile 25, Kennebunk, ME</a></div>
+      <div class="stop-meta">
+        <span><strong>POWER</strong> 250 kW V3 · 8 stalls</span>
+        <span><strong>OPEN</strong> 24/7</span>
+      </div>
+      <div class="stop-note">
+        Southbound service plaza, no detour off I-95. ~15 min top-up gets you home.
+<span class="restroom">Restrooms inside. Backup chargers: Portsmouth (25 mi south), Seabrook (37 mi south).</span>      </div>
+    </div>
+    <div class="leg"><span>85 mi · ~85 min</span><span>I-95 S → I-93 S → home</span></div>
+  </article>
+
+      <article class="stop">
+    <div class="stop-times">
+      <div class="arr">9:50 PM</div>
+      <div class="dur">home</div>
+      <div class="battery bat-mid">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="7.92" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">44%</span>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">10</span>Somerville · Home</div>
+        <span class="stop-icon home"><svg><use href="#i-home"/></svg></span>
+      </div>
+      <div class="stop-addr"><a href="https://www.google.com/maps/search/?api=1&amp;query=29+Woodbine+St%2C+Somerville%2C+MA+02144" target="_blank" rel="noopener noreferrer">Woodbine St, Somerville, MA</a></div>
+      <div class="stop-note">
+        10 stops · 255 miles · 11h 50m door to door.
+      </div>
+    </div>
+  </article>
 
   </div>
 

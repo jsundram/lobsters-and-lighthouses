@@ -562,6 +562,12 @@
     color: var(--ink-soft);
   }
 
+  /* ---------- page 2 running header (print-only) ---------- */
+  /* Hidden on screen. In print: the .page-break wrapper triggers the break */
+  /* and adds top-leadin space to match page 1's .page top padding, so the   */
+  /* running-header's rule lands at the same y as page 1's masthead rule.   */
+  .page-break, .running-header { display: none; }
+
   /* ---------- print ---------- */
   @media print {
     @page {
@@ -581,14 +587,42 @@
       margin: 0;
       box-shadow: none;
       width: 100%;
-      min-height: 100vh;
-      page-break-after: always;
+      padding: 0.3in 0.5in 0.25in;  /* tight to maximize content per page */
     }
-    .page:last-child { page-break-after: auto; }
     .stop { break-inside: avoid; }
+
+    /* Page-2 leadin: wraps the running-header. Forces the page break, then  */
+    /* adds top padding so the running-header's rule lands at the same y     */
+    /* offset as page 1's masthead rule (which has 0.3in of .page padding    */
+    /* above it). Keeps the two pages visually symmetric.                    */
+    .page-break {
+      display: block;
+      page-break-before: always;
+      padding-top: 0.3in;
+      break-inside: avoid;
+    }
+    .running-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      border-top: 3px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      padding: 10px 0;
+      margin-bottom: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      break-inside: avoid;
+    }
+    .running-header .rh-title { color: var(--navy-deep); font-weight: 700; }
+    .running-header .rh-date  { text-align: center; }
+    .running-header .rh-page  { text-align: right; }
   }
 
-  @media (max-width: 900px) {
+  @media screen and (max-width: 900px) {
     .page { width: auto; padding: 24px; margin: 0; }
     .masthead {
       grid-template-columns: 1fr;
@@ -891,45 +925,56 @@
     <h2>The Itinerary</h2>
   </div>
 
-  <div class="timeline">
-
-    {% for stop in stops %}
-    <article class="stop">
-      <div class="stop-times">
-        <div class="arr">{{ stop.arrival }}</div>
-        <div class="dur">{{ stop.duration_label }}</div>
-        {% if 'departure' in stop %}
-        <div class="dep">→ {{ stop.departure }}</div>
-        {% endif %}
-        <div class="battery {{ stop.battery.css_class }}">
-          <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="{{ stop.battery.fill_width }}" height="8" rx="0.5" fill="currentColor"/></svg>
-          <span class="pct">{{ stop.battery.label }}</span>
-        </div>
-      </div>
-      <div class="stop-body">
-        <div class="stop-head">
-          <div class="stop-name"><span class="num">{{ stop.id }}</span>{{ stop.name }}</div>
-          <span class="stop-icon {{ stop.icon_class }}"><svg><use href="#i-{{ stop.icon }}"/></svg></span>
-        </div>
-        <div class="stop-addr"><a href="{{ stop.maps_url }}" target="_blank" rel="noopener noreferrer">{{ stop.address_display }}</a></div>
-        {% if 'meta' in stop %}
-        <div class="stop-meta">
-          {% for m in stop.meta %}
-          <span><strong>{{ m.label }}</strong> {{ m.value }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
-        <div class="stop-note">
-          {{ stop.note }}
-          {% if 'restroom' in stop %}<span class="restroom">{{ stop.restroom }}</span>{% endif %}
-        </div>
-      </div>
-      {% if stop.get('leg_distance_label') %}
-      <div class="leg"><span>{{ stop.leg_distance_label }}</span><span>{{ stop.leg_route }}</span></div>
+  {% macro render_stop(stop) %}
+  <article class="stop">
+    <div class="stop-times">
+      <div class="arr">{{ stop.arrival }}</div>
+      <div class="dur">{{ stop.duration_label }}</div>
+      {% if 'departure' in stop %}
+      <div class="dep">→ {{ stop.departure }}</div>
       {% endif %}
-    </article>
-    {% endfor %}
+      <div class="battery {{ stop.battery.css_class }}">
+        <svg viewBox="0 0 26 12"><rect x="0.6" y="0.6" width="20.8" height="10.8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="22" y="3.5" width="2.4" height="5" rx="0.5" fill="currentColor"/><rect x="2" y="2" width="{{ stop.battery.fill_width }}" height="8" rx="0.5" fill="currentColor"/></svg>
+        <span class="pct">{{ stop.battery.label }}</span>
+      </div>
+    </div>
+    <div class="stop-body">
+      <div class="stop-head">
+        <div class="stop-name"><span class="num">{{ stop.id }}</span>{{ stop.name }}</div>
+        <span class="stop-icon {{ stop.icon_class }}"><svg><use href="#i-{{ stop.icon }}"/></svg></span>
+      </div>
+      <div class="stop-addr"><a href="{{ stop.maps_url }}" target="_blank" rel="noopener noreferrer">{{ stop.address_display }}</a></div>
+      {% if 'meta' in stop %}
+      <div class="stop-meta">
+        {% for m in stop.meta %}
+        <span><strong>{{ m.label }}</strong> {{ m.value }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="stop-note">
+        {{ stop.note }}
+        {% if 'restroom' in stop %}<span class="restroom">{{ stop.restroom }}</span>{% endif %}
+      </div>
+    </div>
+    {% if stop.get('leg_distance_label') %}
+    <div class="leg"><span>{{ stop.leg_distance_label }}</span><span>{{ stop.leg_route }}</span></div>
+    {% endif %}
+  </article>
+  {% endmacro %}
 
+  <div class="timeline">
+    {% for stop in stops %}
+    {% if loop.index0 == page_break_at %}
+    <div class="page-break" aria-hidden="true">
+      <div class="running-header">
+        <span class="rh-title">{{ cfg.trip.title }}</span>
+        <span class="rh-date">{{ date.strftime("%A, %B") }} {{ date.day }}, {{ date.year }}</span>
+        <span class="rh-page">Page 2 / 2</span>
+      </div>
+    </div>
+    {% endif %}
+    {{ render_stop(stop) }}
+    {% endfor %}
   </div>
 
   <div class="route-block">

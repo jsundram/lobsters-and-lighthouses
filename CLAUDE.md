@@ -16,7 +16,8 @@ maine/
 ├── build.py             # fetch + compute + render → build/trip-handout.html
 ├── test_build.py        # pytest suite (50 tests, run before every change)
 ├── build/
-│   └── trip-handout.html  # generated output (what you publish or print)
+│   ├── trip-handout.html  # generated output (what you publish to the web)
+│   └── trip-handout.pdf   # generated 2-page letter PDF (front + back of a sheet)
 ├── data/
 │   └── tides_<station>_<YYYYMMDD>.json  # NOAA fetch cache, keyed by date
 └── .archive/            # superseded files (original CSV, pre-refactor HTML, etc.)
@@ -89,6 +90,10 @@ What gets fetched / computed at build time:
   length) via `astral` from the configured lat/lng/tz.
 - **Moon phase** via `astral.moon.phase()` — currently computed but not
   displayed (was in the chart earlier; removed during a tightening pass).
+- **PDF render** via Playwright (Chromium): the HTML is loaded with
+  `media=print`, the running-header strip's position is measured, and the
+  largest PDF scale that fits both halves into one letter page each is
+  computed. Verified to be exactly 2 pages via `pypdf`; a regression raises.
 - **Per-stop SoC** by walking through stops in order and subtracting
   `leg_distance_mi × wh_per_mi` from the running battery percentage, where
   `wh_per_mi` is derived from the leg's average speed

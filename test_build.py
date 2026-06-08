@@ -421,6 +421,38 @@ class TestBuild:
         assert "data:image/svg+xml" in content
 
 
+class TestPdf:
+    """End-to-end: render_pdf produces exactly 2 letter pages at a sane scale."""
+
+    @pytest.fixture(scope="class")
+    def pdf(self):
+        out = build.build()
+        pages, scale = build.render_pdf(out, build.PDF_OUTPUT)
+        return build.PDF_OUTPUT, pages, scale
+
+    def test_two_pages(self, pdf):
+        _, pages, _ = pdf
+        assert pages == 2
+
+    def test_scale_in_reasonable_range(self, pdf):
+        """Below 0.6 the design has bloated; above 0.85 the running-header is
+        probably mis-placed and the pages would underfill. Either should be
+        a build-design red flag."""
+        _, _, scale = pdf
+        assert 0.6 < scale < 0.85, f"scale={scale}"
+
+    def test_page_size_is_letter(self, pdf):
+        from pypdf import PdfReader
+        path, _, _ = pdf
+        reader = PdfReader(str(path))
+        for i, page in enumerate(reader.pages, 1):
+            # PDF user-space units = points (1/72 inch). Letter = 612 × 792 pt.
+            w = float(page.mediabox.width)
+            h = float(page.mediabox.height)
+            assert abs(w - 612) < 1, f"page {i} width {w}pt, expected 612"
+            assert abs(h - 792) < 1, f"page {i} height {h}pt, expected 792"
+
+
 class TestDateOverride:
     def test_override_date_via_build(self, tmp_path, monkeypatch):
         """Build with a non-config date and confirm output uses it."""

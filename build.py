@@ -575,6 +575,9 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
         stops=stops,
         tide_svg=Markup(tide_svg),
         qr_svg=Markup(qr_svg),
+        # PDF page split: stops[:page_break_at] on page 1, rest on page 2.
+        # Tuned so page 1 ends after Footbridge Lobster (stop 04) — the lunch break.
+        page_break_at=cfg.get("pdf", {}).get("break_before_stop_index", 5),
     )
 
     BUILD.mkdir(exist_ok=True)
@@ -582,15 +585,99 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
     return OUTPUT
 
 
+# ---------------------------------------------------------------------------
+# PDF rendering (Playwright + page-count check via pypdf)
+# ---------------------------------------------------------------------------
+
+PDF_OUTPUT = BUILD / "trip-handout.pdf"
+
+# 8.5 × 11 inches at Chromium's 96 dpi.
+PRINT_PAGE_PX = 1056
+
+# Chromium needs ~1% slack below the theoretical scale before rounding pushes
+# content onto a third page. 0.985 is plenty empirically — leaves only ~15px
+# of whitespace per page at the bottom.
+SCALE_SAFETY = 0.97
+
+
+def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> tuple[int, float]:
+    """Render `html_path` to `pdf_path` via headless Chromium (Playwright).
+
+    Measures the laid-out heights of page 1 (content before .running-header)
+    and page 2 (.running-header onwards), then picks the largest PDF scale
+    that fits both inside one letter page each. Returns (page_count, scale).
+    Raises RuntimeError if the rendered count doesn't match `expected_pages`.
+    """
+    from playwright.sync_api import sync_playwright
+
+    def _launch(p):
+        try:
+            return p.chromium.launch()
+        except Exception:
+            # Browser binary not yet installed in this uvx env — pull it
+            import subprocess
+            subprocess.run(
+                [sys.executable, "-m", "playwright", "install", "chromium"],
+                check=True,
+            )
+            return p.chromium.launch()
+
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as p:
+        browser = _launch(p)
+        page = browser.new_page(viewport={"width": 816, "height": PRINT_PAGE_PX})
+        page.goto(f"file://{html_path.resolve()}")
+        page.wait_for_load_state("networkidle")
+        page.emulate_media(media="print")
+
+        m = page.evaluate(
+            "() => ({"
+            "  break_y: document.querySelector('.page-break').getBoundingClientRect().top,"
+            "  total:   document.body.scrollHeight,"
+            "})"
+        )
+        page1_native = float(m["break_y"])
+        page2_native = float(m["total"]) - page1_native
+        max_native = max(page1_native, page2_native)
+        scale = max(0.1, min(2.0, PRINT_PAGE_PX * SCALE_SAFETY / max_native))
+
+        page.pdf(
+            path=str(pdf_path),
+            format="Letter",
+            print_background=True,
+            margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
+            prefer_css_page_size=False,
+            scale=scale,
+        )
+        browser.close()
+
+    from pypdf import PdfReader
+    pages = len(PdfReader(str(pdf_path)).pages)
+    if expected_pages is not None and pages != expected_pages:
+        raise RuntimeError(
+            f"PDF page count regression: expected {expected_pages}, got {pages} "
+            f"(scale={scale:.3f}, page1_native={page1_native:.0f}px, "
+            f"page2_native={page2_native:.0f}px). Tighten the design or move the "
+            f"page-break point in stops.toml/template."
+        )
+    return pages, scale
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build trip-handout.html")
+    parser = argparse.ArgumentParser(description="Build trip-handout.html (and optionally a PDF)")
     parser.add_argument("--date", help="Override trip date (YYYY-MM-DD)")
     parser.add_argument("--force-fetch", action="store_true",
                         help="Re-fetch NOAA tide data even if cached")
+    parser.add_argument("--no-pdf", action="store_true",
+                        help="Skip the PDF render step (fast iteration)")
     args = parser.parse_args()
     date = dt.date.fromisoformat(args.date) if args.date else None
     out = build(date=date, force_fetch=args.force_fetch)
     print(f"Wrote {out} ({out.stat().st_size:,} bytes)")
+    if not args.no_pdf:
+        pages, scale = render_pdf(out, PDF_OUTPUT)
+        print(f"Wrote {PDF_OUTPUT} ({PDF_OUTPUT.stat().st_size:,} bytes, "
+              f"{pages} pages, scale={scale:.3f})")
     return 0
 
 
