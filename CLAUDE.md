@@ -3,6 +3,8 @@
 A static-HTML in-car handout for a 10-stop day trip up the southern Maine coast,
 generated from data files by a small Python build script.
 
+Repo: <https://github.com/jsundram/lobsters-and-lighthouses>
+
 ## File map
 
 ```
@@ -170,6 +172,20 @@ home screen with the lighthouse icon and 🍦🦞 label:
 The handout works offline after the first visit (HTML, QR, lighthouse icon,
 tide chart are all inlined; only the Google Fonts CDN is external, and those
 gracefully degrade to system serif/sans if unreachable).
+
+## Publishing changes
+
+The project lives at <https://github.com/jsundram/lobsters-and-lighthouses>.
+After tweaks:
+
+```sh
+./run                            # tests + build (regenerates build/trip-handout.html)
+git add -A && git commit -m "…"
+git push
+```
+
+If you want the public Netlify URL to update too, redeploy via Netlify Drop
+(or wire up a Netlify GitHub integration for automatic deploys on push).
 
 ## Why these design choices
 
