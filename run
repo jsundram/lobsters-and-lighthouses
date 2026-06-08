@@ -2,7 +2,8 @@
 # run — wrapper for tests + build.
 # Usage:
 #   ./run              # test + build (default)
-#   ./run build        # just build (no tests)
+#   ./run build        # build HTML + PDF
+#   ./run html         # build HTML only (skip ~5s Chromium PDF render)
 #   ./run test         # just tests (verbose)
 #   ./run refresh      # build with --force-fetch (re-pull NOAA tide data)
 #   ./run <cmd> ARGS   # pass remaining args through, e.g.
@@ -26,6 +27,9 @@ case "$cmd" in
   build)
     $UVX python3 build.py "$@"
     ;;
+  html)
+    $UVX python3 build.py --no-pdf "$@"
+    ;;
   test)
     $UVX_TEST python3 -m pytest test_build.py -v "$@"
     ;;
@@ -34,7 +38,7 @@ case "$cmd" in
     ;;
   *)
     echo "unknown command: $cmd" >&2
-    echo "usage: ./run [all|build|test|refresh] [extra args...]" >&2
+    echo "usage: ./run [all|build|html|test|refresh] [extra args...]" >&2
     exit 64
     ;;
 esac

@@ -234,7 +234,7 @@ class TestTideFetch:
 
 
 # ---------------------------------------------------------------------------
-# Sun / moon
+# Sun
 # ---------------------------------------------------------------------------
 
 class TestSun:
@@ -262,25 +262,6 @@ class TestSun:
         sun = build.compute_sun(dt.date(2026, 6, 8), 43.6591, -70.2568,
                                 "America/New_York", "Portland, ME")
         assert sun["golden_hour"] < sun["sunset"]
-
-
-class TestMoon:
-    def test_june_8_is_neap(self):
-        """June 7 2026 is third quarter; June 8 should classify as neap."""
-        m = build.compute_moon(dt.date(2026, 6, 8))
-        assert m["tide_class"] == "neap"
-        assert "quarter" in m["label"]
-
-    def test_june_22_is_neap(self):
-        """June 21 2026 is first quarter; June 22 should classify as neap."""
-        m = build.compute_moon(dt.date(2026, 6, 22))
-        assert m["tide_class"] == "neap"
-        assert "quarter" in m["label"]
-
-    def test_full_moon_is_spring(self):
-        """May 31 2026 is full moon → spring tide."""
-        m = build.compute_moon(dt.date(2026, 5, 31))
-        assert m["tide_class"] == "spring"
 
 
 # ---------------------------------------------------------------------------

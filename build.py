@@ -76,34 +76,25 @@ def fetch_tides(station_id: int, date: dt.date, *, force: bool = False) -> list[
 # Webfont embedding (so Chromium's PDF backend doesn't fall back on SVG text)
 # ---------------------------------------------------------------------------
 
-# JetBrains Mono ttf URLs from Google Fonts (latin range). The "v24" version
-# is pinned so cache invalidation is explicit when we want to refresh.
-# We embed JBM directly because Chromium's PDF generator inconsistently
-# resolves loaded webfonts for inline-SVG <text> elements — even when CSS
-# computed-style says the right thing, the PDF renderer can fall back to a
-# system monospace. Embedding the font bytes sidesteps that entirely.
+# JetBrains Mono TTFs are checked into data/ so the build has no runtime
+# webfont dependency. We embed them as base64 @font-face because Chromium's
+# PDF generator inconsistently resolves loaded webfonts for inline-SVG <text>
+# elements — even when CSS computed-style says the right thing, the PDF
+# renderer can fall back to a system monospace. Embedding the font bytes
+# sidesteps that entirely.
 JETBRAINS_MONO_TTFS = {
-    500: "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8-qxjPQ.ttf",
-    700: "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8L6tjPQ.ttf",
+    500: "JetBrainsMono-Medium.ttf",
+    700: "JetBrainsMono-Bold.ttf",
 }
 
 
 def get_jetbrains_mono_css() -> str:
-    """Return @font-face CSS with JetBrains Mono 500 and 700 base64-embedded.
-    Cached in data/ so first build pulls, subsequent builds are offline."""
+    """Return @font-face CSS with JetBrains Mono 500 and 700 base64-embedded
+    from data/*.ttf."""
     import base64
-    cache = DATA / "jetbrains_mono.css"
-    if cache.exists():
-        return cache.read_text()
-    DATA.mkdir(exist_ok=True)
     chunks = []
-    for weight, url in JETBRAINS_MONO_TTFS.items():
-        req = urllib.request.Request(url, headers={
-            # Google Fonts gates woff2 behind UA detection; ttf works for all.
-            "User-Agent": "Mozilla/5.0",
-        })
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            ttf_bytes = resp.read()
+    for weight, fname in JETBRAINS_MONO_TTFS.items():
+        ttf_bytes = (DATA / fname).read_bytes()
         b64 = base64.b64encode(ttf_bytes).decode("ascii")
         chunks.append(
             "@font-face {\n"
@@ -113,13 +104,11 @@ def get_jetbrains_mono_css() -> str:
             f"  src: url(data:font/ttf;base64,{b64}) format('truetype');\n"
             "}"
         )
-    css = "\n".join(chunks)
-    cache.write_text(css)
-    return css
+    return "\n".join(chunks)
 
 
 # ---------------------------------------------------------------------------
-# Sun & moon
+# Sun
 # ---------------------------------------------------------------------------
 
 def compute_sun(date: dt.date, lat: float, lng: float, tz: str, city: str = "") -> dict:
@@ -141,30 +130,6 @@ def compute_sun(date: dt.date, lat: float, lng: float, tz: str, city: str = "") 
         "civil_dusk": s["dusk"],
         "day_length": s["sunset"] - s["sunrise"],
     }
-
-
-def compute_moon(date: dt.date) -> dict:
-    """Return phase value (0-28), descriptive label, tide class (spring/neap/transitional)."""
-    from astral import moon
-    phase = moon.phase(date)
-    # Classify
-    if phase < 1.5 or phase > 26.5:
-        label, tide_class = "new moon", "spring"
-    elif phase < 5.5:
-        label, tide_class = "waxing crescent", "approaching spring"
-    elif phase < 8.5:
-        label, tide_class = "first quarter", "neap"
-    elif phase < 12.5:
-        label, tide_class = "waxing gibbous", "approaching spring"
-    elif phase < 15.5:
-        label, tide_class = "full moon", "spring"
-    elif phase < 19.5:
-        label, tide_class = "waning gibbous", "approaching neap"
-    elif phase < 22.5:
-        label, tide_class = "last quarter", "neap"
-    else:
-        label, tide_class = "waning crescent", "approaching neap"
-    return {"phase": phase, "label": label, "tide_class": tide_class}
 
 
 # ---------------------------------------------------------------------------
@@ -590,7 +555,6 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
         cfg["location"]["sun_tz"],
         cfg["location"]["sun_city_name"],
     )
-    moon = compute_moon(date)
     tides = fetch_tides(cfg["location"]["tide_station_id"], date, force=force_fetch)
 
     # Merge battery thresholds into car_cfg for compute_soc
@@ -621,11 +585,12 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
         title_meta=f"{cfg['trip']['title']} · {fmt_date_long(date)}",
         # Embed JetBrains Mono so PDF SVG text renders consistently.
         jbm_css=Markup(get_jetbrains_mono_css()),
+        # style.css is inlined here so the output is a single self-contained file.
+        style_css=Markup((ROOT / "style.css").read_text()),
         sun={
             **{k: fmt_time(v) for k, v in sun.items() if k != "day_length"},
             "day_length": fmt_duration_hm(sun["day_length"]),
         },
-        moon=moon,
         stops=stops,
         tide_svg=Markup(tide_svg),
         qr_svg=Markup(qr_svg),
