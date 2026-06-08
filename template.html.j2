@@ -223,31 +223,7 @@
     text-underline-offset: 2px;
   }
   .tide-vis { flex: 1; min-width: 0; }
-  .tide-vis svg { width: 100%; height: auto; display: block; overflow: visible; }
-  /* Tide chart labels live inside <foreignObject> elements (not native SVG
-     <text>) so the PDF renderer picks up JetBrains Mono reliably. The font
-     sizes here are in px because foreignObject HTML inherits a CSS context
-     and scales with the parent SVG's viewBox. */
-  .tide-vis .tide-callout {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    color: #1c3a5e;
-    letter-spacing: -0.01em;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-  }
-  .tide-vis .tide-tick {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    font-size: 11px;
-    color: #4a5566;
-    letter-spacing: 0.05em;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-  }
+  .tide-vis svg { width: 100%; height: auto; display: block; }
   @media print {
     .tides .dl-title .src { text-decoration: none; }
   }

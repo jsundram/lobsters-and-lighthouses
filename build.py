@@ -370,33 +370,25 @@ def render_tide_svg(predictions: list[dict], stops: list[dict], cfg: dict) -> st
             f'r="2" fill="#1c3a5e" opacity="0.7"/>'
         )
 
-    # Text labels (axis ticks + HIGH/LOW callouts) are rendered as HTML inside
-    # <foreignObject> rather than as native SVG <text> — Chromium's PDF
-    # backend renders SVG text with a different glyph engine that doesn't
-    # consistently honor webfonts, even when those fonts are embedded via
-    # @font-face. foreignObject routes through normal HTML rendering, which
-    # picks up JetBrains Mono cleanly in both screen and PDF.
-    def fo_label(cx: float, cy: float, text: str, css_class: str,
-                 box_w: float = 200, box_h: float = 18) -> str:
-        x = cx - box_w / 2
-        y = cy - box_h / 2
-        # xhtml namespace required inside foreignObject; xml:space="preserve"
-        # so we keep the runs of spaces in "HIGH  6:24 PM  ·  9.1 ft".
-        return (
-            f'<foreignObject x="{x:.1f}" y="{y:.1f}" '
-            f'width="{box_w}" height="{box_h}">'
-            f'<div xmlns="http://www.w3.org/1999/xhtml" class="{css_class}"'
-            f' xml:space="preserve">{text}</div>'
-            f'</foreignObject>'
-        )
+    # Text labels are native SVG <text>. JetBrains Mono is base64-embedded
+    # via @font-face in the page <style> so Chromium's PDF backend picks
+    # it up reliably here. Font-sizes are in viewBox user units; the SVG
+    # then scales with its container — so we pick values that *after* scaling
+    # land near daylight's 13px values / 8.5px labels.
+    # Empirically: SVG renders at ~0.9× scale in print, so 11 user units →
+    # ~10 print px; 7 user units → ~6.3 print px. That visually matches the
+    # daylight 13px / 8.5px CSS sizes after accounting for the page-level
+    # PDF scale (~0.7).
 
-    # Time axis ticks (one line under the baseline, one HTML label below)
+    # Time axis ticks
     ticks = [(10, "10 AM"), (13, "1 PM"), (16, "4 PM"), (19, "7 PM"), (22, "10 PM")]
     axis = "".join(
         f'<line x1="{fmt(xof(ht))}" y1="{fmt(baseline_y)}" '
         f'x2="{fmt(xof(ht))}" y2="{fmt(baseline_y+3)}" '
         f'stroke="#4a5566" stroke-width="0.7"/>'
-        + fo_label(xof(ht), baseline_y + 12, label, "tide-tick", box_w=80, box_h=14)
+        f'<text x="{fmt(xof(ht))}" y="{fmt(baseline_y+10)}" '
+        f'font-family="JetBrains Mono, monospace" font-size="7" font-weight="500" '
+        f'fill="#4a5566" text-anchor="middle" letter-spacing="0.05em">{label}</text>'
         for ht, label in ticks
     )
 
@@ -409,7 +401,9 @@ def render_tide_svg(predictions: list[dict], stops: list[dict], cfg: dict) -> st
         markers += (
             f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="4.5" '
             f'fill="#fbf6ea" stroke="#1c3a5e" stroke-width="1.8"/>'
-            + fo_label(x, y - 12, text, "tide-callout", box_w=220, box_h=18)
+            f'<text x="{fmt(x)}" y="{fmt(y - 8)}" '
+            f'font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" '
+            f'fill="#1c3a5e" text-anchor="middle" letter-spacing="-0.01em">{text}</text>'
         )
 
     return (
