@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# run — wrapper for tests + build.
+# Usage:
+#   ./run              # test + build (default)
+#   ./run build        # just build (no tests)
+#   ./run test         # just tests (verbose)
+#   ./run refresh      # build with --force-fetch (re-pull NOAA tide data)
+#   ./run <cmd> ARGS   # pass remaining args through, e.g.
+#                      #   ./run build --date 2026-07-13
+#                      #   ./run test -v -k battery
+set -euo pipefail
+cd "$(dirname "$0")"
+
+UVX="uvx --with jinja2 --with astral --with qrcode"
+UVX_TEST="$UVX --with pytest"
+
+cmd="${1:-all}"; shift || true
+
+case "$cmd" in
+  all)
+    echo "→ tests"
+    $UVX_TEST python3 -m pytest test_build.py
+    echo "→ build"
+    $UVX python3 build.py "$@"
+    ;;
+  build)
+    $UVX python3 build.py "$@"
+    ;;
+  test)
+    $UVX_TEST python3 -m pytest test_build.py -v "$@"
+    ;;
+  refresh)
+    $UVX python3 build.py --force-fetch "$@"
+    ;;
+  *)
+    echo "unknown command: $cmd" >&2
+    echo "usage: ./run [all|build|test|refresh] [extra args...]" >&2
+    exit 64
+    ;;
+esac

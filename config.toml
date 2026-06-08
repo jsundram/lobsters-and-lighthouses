@@ -1,0 +1,63 @@
+# Trip configuration — change `date` and rerun `python build.py` to refresh
+# everything (sun times, tide curve, moon phase). Day-of-week-dependent things
+# (hours, restaurant open-times) are assumed unchanged because we always book a
+# Monday; if you ever move to another day, sanity-check those in stops.toml.
+
+[trip]
+date = "2026-06-22"                  # YYYY-MM-DD — the one knob most edits will touch
+title = "Lobsters & Lighthouses"
+short_label = "🍦🦞"                  # iOS/Android home-screen label (kept short)
+description = "Southern Maine coast day trip — 10 stops, 255 miles, lobster + ice cream included."
+
+[location]
+# Tide station — NOAA #8419399 sits at Cape Neddick (Nubble Light) and covers the
+# whole route well. Find your station: https://tidesandcurrents.noaa.gov/
+tide_station_id = 8419399
+tide_station_name = "Cape Neddick, ME"
+tide_station_url = "https://tidesandcurrents.noaa.gov/stationhome.html?id=8419399"
+# Sun computations — Portland is roughly central to the route.
+sun_city_name = "Portland, ME"
+sun_lat = 43.6591
+sun_lng = -70.2568
+sun_tz = "America/New_York"
+
+[maps]
+# Full Google Maps directions URL with all 10 waypoints, copied from the browser
+# after dragging the route in maps.google.com. Encoded into the QR code and
+# linked from "Google Maps · all ten stops" + each address row's pin icon.
+all_stops_url = "https://www.google.com/maps/dir/29+Woodbine+St,+Somerville,+MA+02144-1116,+USA/Bob's+Clam+Hut,+315+US-1,+Kittery,+ME+03904/NUBBLE+LIGHT+%2F+SOHIER+PARK,+Sohier+Park+Rd,+York,+ME+03909/Marginal+Way+%26+Oarweed+Rd,+Ogunquit,+ME+03907/Footbridge+Lobster,+108+Perkins+Cove+Rd,+Ogunquit,+ME+03907/East+Point+Audubon+Sanctuary,+L.B.+Orcutt+Blvd,+Biddeford,+ME+04005/Sweetcream+Dairy,+128+Main+St+Unit+101,+Biddeford,+ME+04005/The+Lobster+Shack+at+Two+Lights,+225+Two+Lights+Rd,+Cape+Elizabeth+ME+04107/Fort+Williams+Park,+1000+Shore+Rd,+Cape+Elizabeth,+ME+04107/Kennebunk+Service+Plaza+Southbound,+Maine+Turnpike,+Kennebunk,+ME/29+Woodbine+St,+Somerville,+MA+02144-1116,+USA"
+
+[car]
+# Tesla Model Y Performance 2023. Used by the per-stop SoC computation.
+battery_kwh = 75
+start_soc_pct = 100                  # Battery state at the masthead departure
+charge_stop_id = "09"                # Which stop in stops.toml is the charge stop
+charge_target_pct = 77               # SoC to leave the charge stop at
+
+# Efficiency model. Wh/mi for each leg is computed from the leg's *average
+# speed* (derived from stops.toml's distance & drive-time fields):
+#
+#     wh_per_mi(mph) = base_wh_per_mi + slope_wh_per_mph * mph
+#
+# Calibrated against real-world Tesla Model Y Performance numbers with 21"
+# wheels and AC on a warm day. Linear is approximate (real aero drag is
+# quadratic) but close enough for a one-day trip's planning use.
+#
+# Reference points the line passes through:
+#   25 mph (coastal / stop-and-go) ≈ 245 Wh/mi
+#   60 mph (turnpike cruise)        ≈ 290 Wh/mi
+[car.efficiency]
+base_wh_per_mi = 213.0
+slope_wh_per_mph = 1.29
+
+# Optional per-leg overrides (Wh/mi) — keyed by destination stop id. Use this
+# when a specific leg's consumption is known from a previous trip and the
+# speed-derived value doesn't match (e.g. heavy traffic, AC blasting).
+[car.efficiency.overrides]
+# "09" = 310   # Example: Fort Williams → Kennebunk ran hot last time
+
+[battery_thresholds]
+# Color classes for the SoC indicator (renders as the small battery icon's color).
+hi_min = 60                          # >= 60 → bat-hi (pine green)
+mid_min = 35                         # 35–59 → bat-mid (tide blue)
+                                     # < 35 → bat-low (amber)

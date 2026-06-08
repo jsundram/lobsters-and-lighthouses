@@ -1,0 +1,12 @@
+Location Name,Address,Distance From Prev. Location (mi.),Cumulative Mileage,Est. Driving Time From Previous Location (min.),Target Arrival Time,Target Departure Time,Category,Website,Hours,Parking / Entrance Fee,Restrooms?,Notes
+Jason's building,"Woodbine St, Somerville, MA 02143",,0,,,10:00 AM,,,,,,
+Bob's Clam Hut,"315 US-1, Kittery, ME 03904",62,62,70,11:10 AM,12:00 PM,Food,https://bobsclamhut.com/,11 AM - 7 PM,,Y,
+Nubble Lighthouse,"1 Sohier Park Rd, York, ME 03909",11,73,20,12:20 PM,12:50 PM,Local Park,https://www.yorkparksandrec.org/nubble-light-house,,,Y,Fox's Lobster House York located on site (possible alternate / additional food stop)
+Marginal Way,"Perkins Cove Rd, Ogunquit, ME 03907",8,81,25,1:15 PM,2:00 PM,Public Walking Path,,,,Nearby,"1 mile footpath (2 miles round trip), can walk in full or in part. Southern end at Perkins Cove (same parking area as Footbridge Lobster + The Lobster Shack)"
+Footbridge Lobster,"108 Perkins Cove Rd, Ogunquit, ME 03907",0,81,0,2:00 PM,2:50 PM,Food,,11 AM - 3 PM,,Nearby,Small counter-service stand (does not appear to have indopr seating or restrooms; public restrooms nearby). The Lobster Shack is located next door (alternate / backup option).
+East Point Audubon Sanctuary,"Lester B. Orcutt Blvd., Biddeford, ME 04005",25,106,55,3:45 PM,4:30 PM,Private Nature Reserve,https://maineaudubon.org/visit/east-point/,dawn to dusk,,N,"Limited parking (park by side of road, not blocking gate)"
+Sweetcream Dairy,"128 Main St Unit 101, Biddeford, ME 04005",8,114,15,4:45 PM,5:20 PM,Food (ice cream),https://www.sweetcreamdairy.com/,1 - 8 PM,,?,
+The Lobster Shack at Two Lights,"225 Two Lights Rd, Cape Elizabeth, ME 04107",20,134,40,6:00 PM,6:45 PM,Food,https://lobstershacktwolights.com/,11 AM - 8 PM,,?,
+Fort Williams Park / Portland Head Light,"1000 Shore Road, Cape Elizabeth, ME 04107",6,140,15,7:00 PM,7:40 PM,Local Park,https://portlandheadlight.com/,sunrise to sunset,$6 per vehicle (up to 2 hours),Y,
+Tesla SuperCharger,"295 Forest Ave, Portland, ME 04101",6,146,20,8:00 PM,8:45 PM,EV Charging Station,,,,Nearby,Located across the street from Back Cove Park -- possible sunset walk while car is charging. Park has public restrooms.
+Jason's building,"Woodbine St, Somerville, MA 02143",109,255,105,10:30 PM,,,,,,,

@@ -1,0 +1,216 @@
+# Per-stop data. Times are wall-clock and don't change with the trip date
+# (Mondays only). Mileage and `leg_drive_min` come from Google Maps for the
+# specific route and stay constant. Icons map to symbols in the inline SVG
+# library in template.html.j2.
+
+[[stops]]
+id = "00"
+kind = "depart"
+name = "Somerville · Departure"
+address_display = "Woodbine St, Somerville, MA"
+address_query = "29 Woodbine St, Somerville, MA 02144"
+icon = "car"
+icon_class = "car"
+arrival = "10:00 AM"
+duration_label = "depart"
+note = "70 minutes north on I-93 → I-95."
+restroom = "Use restrooms before departure; first stop is Bob's Clam Hut at 11:10."
+leg_distance_mi = 62
+leg_drive_min = 70
+leg_route = "I-93 → I-95 N → US-1"
+
+[[stops]]
+id = "01"
+kind = "food"
+name = "Bob's Clam Hut"
+address_display = "315 US-1, Kittery, ME"
+address_query = "Bob's Clam Hut, 315 US-1, Kittery, ME 03904"
+icon = "lobster"
+icon_class = "food"
+arrival = "11:10 AM"
+duration_label = "50 min"
+departure = "12:00 PM"
+meta = [ { label = "HOURS", value = "11 AM – 7 PM" } ]
+note = "1956 clam shack on US-1. Whole-belly fried clams are the headline — Bob's Way (corn-flour dredge) or Lillian's Way (egg-milk wash). Onion rings too. Outdoor picnic tables."
+restroom = "Restrooms on site."
+leg_distance_mi = 11
+leg_drive_min = 20
+leg_route = "Coastal Rt 1A / 103"
+
+[[stops]]
+id = "02"
+kind = "park"
+name = "Nubble Lighthouse"
+address_display = "Sohier Park · 1 Sohier Park Rd, York, ME"
+address_query = "Nubble Lighthouse, 1 Sohier Park Rd, York, ME 03909"
+icon = "lighthouse"
+icon_class = "lighthouse"
+arrival = "12:20 PM"
+duration_label = "30 min"
+departure = "12:50 PM"
+meta = [ { label = "OPEN", value = "dawn to dusk" } ]
+note = "Cape Neddick Light on its own islet ten yards offshore. View-only from Sohier Park's rocky shore."
+restroom = "Restrooms on site."
+leg_distance_mi = 8
+leg_drive_min = 25
+leg_route = "US-1 / Shore Rd"
+
+[[stops]]
+id = "03"
+kind = "walk"
+name = "Marginal Way"
+address_display = "Perkins Cove → Shore Rd, Ogunquit, ME"
+address_query = "Marginal Way, Ogunquit, ME 03907"
+icon = "walk"
+icon_class = "walk"
+arrival = "1:15 PM"
+duration_label = "45 min"
+departure = "2:00 PM"
+meta = [
+  { label = "LENGTH", value = "1 mi one-way (2 mi RT)" },
+  { label = "SURFACE", value = "paved cliff path" },
+]
+note = "Paved cliff path from Perkins Cove north along the Atlantic. Park at the Perkins Cove lot, shared with Footbridge Lobster. Benches every few hundred yards."
+restroom = "Restrooms at Perkins Cove (next stop)."
+leg_distance_mi = 0
+leg_drive_min = 0
+leg_route = "Same parking lot"
+leg_distance_label = "0 mi · walk back"
+
+[[stops]]
+id = "04"
+kind = "food"
+name = "Footbridge Lobster"
+address_display = "108 Perkins Cove Rd, Ogunquit, ME"
+address_query = "Footbridge Lobster, 108 Perkins Cove Rd, Ogunquit, ME 03907"
+icon = "lobster"
+icon_class = "food"
+arrival = "2:00 PM"
+duration_label = "50 min"
+departure = "2:50 PM"
+meta = [
+  { label = "HOURS", value = "11 AM – 3 PM" },
+  { label = "SEATING", value = "none — eat at the cove" },
+]
+note = "Walk-up counter at Perkins Cove, no indoor seating. Order the lobster roll butter-and-mayo combo. Lobster grilled cheese is the hidden gem. Lobster Shack as backup."
+restroom = "Use public restrooms here; none until Sweetcream Dairy at 4:45 PM."
+leg_distance_mi = 25
+leg_drive_min = 55
+leg_route = "US-1 N through Wells & Kennebunk"
+
+[[stops]]
+id = "05"
+kind = "park"
+name = "East Point Audubon Sanctuary"
+address_display = "Lester B. Orcutt Blvd, Biddeford Pool, ME"
+address_query = "East Point Audubon Sanctuary, Biddeford Pool, ME 04005"
+icon = "bird"
+icon_class = "bird"
+arrival = "3:45 PM"
+duration_label = "45 min"
+departure = "4:30 PM"
+meta = [
+  { label = "OPEN", value = "dawn to dusk" },
+  { label = "PARKING", value = "roadside; do not block gate" },
+]
+note = "30-acre coastal headland at Biddeford Pool. Meadows down to rocky shore, views across Saco Bay to Wood Island Light. Easy 1-mile loop."
+restroom = "No restrooms; next ones at Sweetcream Dairy."
+leg_distance_mi = 8
+leg_drive_min = 15
+leg_route = "Inland to downtown Biddeford"
+
+[[stops]]
+id = "06"
+kind = "food"
+name = "Sweetcream Dairy"
+address_display = "128 Main St #101, Biddeford, ME"
+address_query = "Sweetcream Dairy, 128 Main St, Biddeford, ME 04005"
+icon = "icecream"
+icon_class = "icecream"
+arrival = "4:45 PM"
+duration_label = "35 min"
+departure = "5:20 PM"
+meta = [ { label = "HOURS", value = "1 – 8 PM" } ]
+note = "Small-batch ice cream in the Pepperell Mills. House favorites: 'What the Fluff' (marshmallow + Ritz), burnt sugar toffee, and the eponymous sweetcream."
+restroom = "Restrooms inside."
+leg_distance_mi = 20
+leg_drive_min = 40
+leg_route = "I-195 → I-95 N → Rt 77"
+
+[[stops]]
+id = "07"
+kind = "food"
+name = "The Lobster Shack at Two Lights"
+address_display = "225 Two Lights Rd, Cape Elizabeth, ME"
+address_query = "The Lobster Shack at Two Lights, 225 Two Lights Rd, Cape Elizabeth, ME 04107"
+icon = "lobster"
+icon_class = "food"
+arrival = "6:00 PM"
+duration_label = "45 min"
+departure = "6:45 PM"
+meta = [
+  { label = "HOURS", value = "11 AM – 8 PM" },
+  { label = "SEATING", value = "outdoor picnic tables, ocean view" },
+]
+note = "Order at the window, eat on the rocks above the Atlantic. Chowder is the standout; fried clams and strawberry-rhubarb pie also highly rated. Lobster roll opinions are mixed."
+restroom = "Restrooms on site."
+leg_distance_mi = 6
+leg_drive_min = 15
+leg_route = "Rt 77 north"
+
+[[stops]]
+id = "08"
+kind = "park"
+name = "Fort Williams Park · Portland Head Light"
+address_display = "1000 Shore Rd, Cape Elizabeth, ME"
+address_query = "Portland Head Light, 1000 Shore Rd, Cape Elizabeth, ME 04107"
+icon = "lighthouse"
+icon_class = "lighthouse"
+arrival = "7:00 PM"
+duration_label = "40 min"
+departure = "7:40 PM"
+# GOLDEN HOUR is computed from sun data, not hardcoded
+meta_extra_template = [
+  { label = "OPEN", value = "sunrise to sunset" },
+  { label = "FEE", value = "$6 per vehicle" },
+  { label = "GOLDEN HOUR", value = "{golden_hour}" },
+]
+note = "Portland Head Light, Maine's oldest (1791). Walk the lawn down to the keeper's house for the iconic view. Pay Parking."
+restroom = "Restrooms on site; next ones at Kennebunk Service Plaza."
+leg_distance_mi = 22
+leg_drive_min = 25
+leg_route = "I-295 S → I-95 S (Maine Turnpike)"
+
+[[stops]]
+id = "09"
+kind = "charge"
+name = "Kennebunk Service Plaza · Tesla Supercharger"
+address_display = "I-95 Southbound · Maine Turnpike Mile 25, Kennebunk, ME"
+address_query = "Kennebunk Service Plaza Southbound, Maine Turnpike, Kennebunk, ME 04043"
+icon = "bolt"
+icon_class = "charge"
+arrival = "8:05 PM"
+duration_label = "20 min"
+departure = "8:25 PM"
+meta = [
+  { label = "POWER", value = "250 kW V3 · 8 stalls" },
+  { label = "OPEN", value = "24/7" },
+]
+note = "Southbound service plaza, no detour off I-95. ~15 min top-up gets you home."
+restroom = "Restrooms inside. Backup chargers: Portsmouth (25 mi south), Seabrook (37 mi south)."
+leg_distance_mi = 85
+leg_drive_min = 85
+leg_route = "I-95 S → I-93 S → home"
+
+[[stops]]
+id = "10"
+kind = "home"
+name = "Somerville · Home"
+address_display = "Woodbine St, Somerville, MA"
+address_query = "29 Woodbine St, Somerville, MA 02144"
+icon = "home"
+icon_class = "home"
+arrival = "9:50 PM"
+duration_label = "home"
+note = "10 stops · 255 miles · 11h 50m door to door."
+# No restroom note; no leg out
