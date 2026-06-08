@@ -1,0 +1,5 @@
+[build]
+  # No build step — the artifact is generated locally via `./run build` and the
+  # committed build/ directory is what Netlify serves.
+  publish = "build"
+  command = ""

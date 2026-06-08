@@ -1,10 +1,11 @@
-"""Build trip-handout.html from config.toml + stops.toml + live NOAA data.
+"""Build build/index.html from config.toml + stops.toml + live NOAA data.
 
 Run with:
     uvx --with jinja2,astral,qrcode python3 build.py
 
-Outputs build/trip-handout.html. NOAA tide responses are cached in cache/ so
-subsequent builds for the same date don't re-fetch.
+Outputs build/index.html (and build/trip-handout.pdf). NOAA tide responses
+are cached in cache/ so subsequent builds for the same date don't re-fetch.
+The HTML is named index.html so Netlify serves it from the site root.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ BUILD = ROOT / "build"
 CACHE = ROOT / "cache"          # regenerable: NOAA tide fetches
 FONTS = ROOT / "fonts"          # pinned vendored assets: JetBrains Mono TTFs
 TEMPLATE = ROOT / "template.html.j2"
-OUTPUT = BUILD / "trip-handout.html"
+OUTPUT = BUILD / "index.html"
 
 
 # ---------------------------------------------------------------------------
@@ -689,7 +690,7 @@ def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> t
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build trip-handout.html (and optionally a PDF)")
+    parser = argparse.ArgumentParser(description="Build build/index.html (and optionally a PDF)")
     parser.add_argument("--date", help="Override trip date (YYYY-MM-DD)")
     parser.add_argument("--force-fetch", action="store_true",
                         help="Re-fetch NOAA tide data even if cached")

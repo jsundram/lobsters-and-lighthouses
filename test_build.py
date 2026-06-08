@@ -439,7 +439,7 @@ class TestDateOverride:
         """Build with a non-config date and confirm output uses it."""
         # Don't pollute the default output
         monkeypatch.setattr(build, "BUILD", tmp_path / "build")
-        monkeypatch.setattr(build, "OUTPUT", tmp_path / "build" / "trip-handout.html")
+        monkeypatch.setattr(build, "OUTPUT", tmp_path / "build" / "index.html")
         out = build.build(date=dt.date(2026, 6, 22))
         content = out.read_text()
         assert "June 22, 2026" in content

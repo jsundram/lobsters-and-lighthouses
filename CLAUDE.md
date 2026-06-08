@@ -13,10 +13,10 @@ maine/
 ├── config.toml          # date · NOAA station · sun location · car SoC params
 ├── stops.toml           # the 11 stops — addresses, hours, notes, leg distances
 ├── template.html.j2     # Jinja2 template — the design layer
-├── build.py             # fetch + compute + render → build/trip-handout.html
+├── build.py             # fetch + compute + render → build/index.html
 ├── test_build.py        # pytest suite (50 tests, run before every change)
 ├── build/
-│   ├── trip-handout.html  # generated output (what you publish to the web)
+│   ├── index.html        # generated output (what you publish to the web)
 │   └── trip-handout.pdf   # generated 2-page letter PDF (front + back of a sheet)
 ├── cache/
 │   └── tides_<station>_<YYYYMMDD>.json  # NOAA fetch cache, keyed by date
@@ -39,7 +39,7 @@ The `./run` wrapper handles uvx + the dep list (`jinja2`, `astral`, `qrcode`,
 ./run refresh                    # re-pull NOAA tides (bypass cache) then build
 ```
 
-Output lands in `build/trip-handout.html`. Open it in a browser to view, or
+Output lands in `build/index.html`. Open it in a browser to view, or
 publish it (Netlify Drop is the quickest path to phone — see "Publishing to
 phone" below).
 
@@ -69,7 +69,7 @@ stops.toml ──┤
              ├──► compute per-stop SoC (from car_cfg + leg distances)
              │
              ▼
-        template.html.j2 ──► build/trip-handout.html
+        template.html.j2 ──► build/index.html
 ```
 
 What each input controls:
@@ -142,10 +142,11 @@ Drag the route in maps.google.com, copy the URL from the browser, paste into
 ```
 
 **Change visual design (colors, layout, typography).**
-Edit `template.html.j2` — the `<style>` block is at the top of the file. The
-icon symbol library is also inline in the template. Run the tests after, then
-eyeball the output. The tests check structure (placeholders resolved, all
-stops present, addresses linked) but not visual correctness.
+Edit `style.css` — it holds all visual styling and is inlined into
+`build/index.html` at build time. The icon symbol library and the masthead
+markup live in `template.html.j2`. Run the tests after, then eyeball the
+output. The tests check structure (placeholders resolved, all stops
+present, addresses linked) but not visual correctness.
 
 ## Tests
 
@@ -164,19 +165,19 @@ covered implicitly by every successful build.
 
 ## Publishing to phone
 
-The build produces a single self-contained HTML file. To get it onto a phone
-home screen with the lighthouse icon and 🍦🦞 label:
+The repo is wired to a Netlify site (config in `netlify.toml`, `publish =
+"build"`, no build command). Every push to `main` redeploys the site from
+the committed `build/` directory. Then:
 
-1. **Netlify Drop**: drag `build/trip-handout.html` onto
-   <https://app.netlify.com/drop>. Get a public URL in ~5 seconds.
-2. **Open on phone in Safari (iOS) or Chrome (Android)**.
-3. **Add to Home Screen** from the share menu. The icon and label come from
+1. **Open the Netlify URL on phone in Safari (iOS) or Chrome (Android)**.
+2. **Add to Home Screen** from the share menu. The icon and label come from
    the embedded `<link rel="apple-touch-icon">` and the JS-generated web
    manifest.
 
 The handout works offline after the first visit (HTML, QR, lighthouse icon,
-tide chart are all inlined; only the Google Fonts CDN is external, and those
-gracefully degrade to system serif/sans if unreachable).
+JetBrains Mono, and tide chart are all inlined; only the Google Fonts CDN
+for Fraunces/Inter is external, and those gracefully degrade to system
+serif/sans if unreachable).
 
 ## Publishing changes
 
@@ -184,7 +185,7 @@ The project lives at <https://github.com/jsundram/lobsters-and-lighthouses>.
 After tweaks:
 
 ```sh
-./run                            # tests + build (regenerates build/trip-handout.html)
+./run                            # tests + build (regenerates build/index.html)
 git add -A && git commit -m "…"
 git push
 ```

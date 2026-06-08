@@ -40,7 +40,7 @@ in `cache/`.
 | `test_build.py`   | pytest suite (50 tests, ~3s) |
 | `cache/`          | NOAA tide-fetch cache (regenerable, checked in) |
 | `fonts/`          | JetBrains Mono TTFs (pinned vendored assets) |
-| `build/`          | Output (`trip-handout.html`, `trip-handout.pdf`) — checked in |
+| `build/`          | Output (`index.html`, `trip-handout.pdf`) — checked in, served by Netlify |
 
 ## Changing the trip date
 
