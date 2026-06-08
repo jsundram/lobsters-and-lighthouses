@@ -73,6 +73,52 @@ def fetch_tides(station_id: int, date: dt.date, *, force: bool = False) -> list[
 
 
 # ---------------------------------------------------------------------------
+# Webfont embedding (so Chromium's PDF backend doesn't fall back on SVG text)
+# ---------------------------------------------------------------------------
+
+# JetBrains Mono ttf URLs from Google Fonts (latin range). The "v24" version
+# is pinned so cache invalidation is explicit when we want to refresh.
+# We embed JBM directly because Chromium's PDF generator inconsistently
+# resolves loaded webfonts for inline-SVG <text> elements — even when CSS
+# computed-style says the right thing, the PDF renderer can fall back to a
+# system monospace. Embedding the font bytes sidesteps that entirely.
+JETBRAINS_MONO_TTFS = {
+    500: "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8-qxjPQ.ttf",
+    700: "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8L6tjPQ.ttf",
+}
+
+
+def get_jetbrains_mono_css() -> str:
+    """Return @font-face CSS with JetBrains Mono 500 and 700 base64-embedded.
+    Cached in data/ so first build pulls, subsequent builds are offline."""
+    import base64
+    cache = DATA / "jetbrains_mono.css"
+    if cache.exists():
+        return cache.read_text()
+    DATA.mkdir(exist_ok=True)
+    chunks = []
+    for weight, url in JETBRAINS_MONO_TTFS.items():
+        req = urllib.request.Request(url, headers={
+            # Google Fonts gates woff2 behind UA detection; ttf works for all.
+            "User-Agent": "Mozilla/5.0",
+        })
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            ttf_bytes = resp.read()
+        b64 = base64.b64encode(ttf_bytes).decode("ascii")
+        chunks.append(
+            "@font-face {\n"
+            "  font-family: 'JetBrains Mono';\n"
+            "  font-style: normal;\n"
+            f"  font-weight: {weight};\n"
+            f"  src: url(data:font/ttf;base64,{b64}) format('truetype');\n"
+            "}"
+        )
+    css = "\n".join(chunks)
+    cache.write_text(css)
+    return css
+
+
+# ---------------------------------------------------------------------------
 # Sun & moon
 # ---------------------------------------------------------------------------
 
@@ -324,15 +370,33 @@ def render_tide_svg(predictions: list[dict], stops: list[dict], cfg: dict) -> st
             f'r="2" fill="#1c3a5e" opacity="0.7"/>'
         )
 
-    # Time axis ticks
+    # Text labels (axis ticks + HIGH/LOW callouts) are rendered as HTML inside
+    # <foreignObject> rather than as native SVG <text> — Chromium's PDF
+    # backend renders SVG text with a different glyph engine that doesn't
+    # consistently honor webfonts, even when those fonts are embedded via
+    # @font-face. foreignObject routes through normal HTML rendering, which
+    # picks up JetBrains Mono cleanly in both screen and PDF.
+    def fo_label(cx: float, cy: float, text: str, css_class: str,
+                 box_w: float = 200, box_h: float = 18) -> str:
+        x = cx - box_w / 2
+        y = cy - box_h / 2
+        # xhtml namespace required inside foreignObject; xml:space="preserve"
+        # so we keep the runs of spaces in "HIGH  6:24 PM  ·  9.1 ft".
+        return (
+            f'<foreignObject x="{x:.1f}" y="{y:.1f}" '
+            f'width="{box_w}" height="{box_h}">'
+            f'<div xmlns="http://www.w3.org/1999/xhtml" class="{css_class}"'
+            f' xml:space="preserve">{text}</div>'
+            f'</foreignObject>'
+        )
+
+    # Time axis ticks (one line under the baseline, one HTML label below)
     ticks = [(10, "10 AM"), (13, "1 PM"), (16, "4 PM"), (19, "7 PM"), (22, "10 PM")]
     axis = "".join(
         f'<line x1="{fmt(xof(ht))}" y1="{fmt(baseline_y)}" '
         f'x2="{fmt(xof(ht))}" y2="{fmt(baseline_y+3)}" '
         f'stroke="#4a5566" stroke-width="0.7"/>'
-        f'<text x="{fmt(xof(ht))}" y="{fmt(baseline_y+15)}" '
-        f'font-family="JetBrains Mono, monospace" font-size="11" fill="#4a5566" '
-        f'text-anchor="middle" letter-spacing="0.05em">{label}</text>'
+        + fo_label(xof(ht), baseline_y + 12, label, "tide-tick", box_w=80, box_h=14)
         for ht, label in ticks
     )
 
@@ -340,18 +404,12 @@ def render_tide_svg(predictions: list[dict], stops: list[dict], cfg: dict) -> st
     markers = ""
     for ev in visible_events:
         x, y = xof(ev["t_hours"]), yof(ev["height"])
-        label = (
-            f'{"HIGH" if ev["kind"] == "H" else "LOW"}  '
-            f'{fmt_time(ev["time"])}  ·  {ev["height"]:.1f} ft'
-        )
-        label_y = y - 10  # always above the marker (clear sky area)
+        kind = "HIGH" if ev["kind"] == "H" else "LOW"
+        text = f'{kind}  {fmt_time(ev["time"])}  ·  {ev["height"]:.1f} ft'
         markers += (
             f'<circle cx="{fmt(x)}" cy="{fmt(y)}" r="4.5" '
             f'fill="#fbf6ea" stroke="#1c3a5e" stroke-width="1.8"/>'
-            f'<text x="{fmt(x)}" y="{fmt(label_y)}" '
-            f'font-family="JetBrains Mono, monospace" font-size="13" '
-            f'font-weight="700" fill="#1c3a5e" text-anchor="middle" '
-            f'letter-spacing="-0.01em">{label}</text>'
+            + fo_label(x, y - 12, text, "tide-callout", box_w=220, box_h=18)
         )
 
     return (
@@ -567,6 +625,8 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
         date_long=fmt_date_long(date),
         date_short=fmt_date_short(date),
         title_meta=f"{cfg['trip']['title']} · {fmt_date_long(date)}",
+        # Embed JetBrains Mono so PDF SVG text renders consistently.
+        jbm_css=Markup(get_jetbrains_mono_css()),
         sun={
             **{k: fmt_time(v) for k, v in sun.items() if k != "day_length"},
             "day_length": fmt_duration_hm(sun["day_length"]),
@@ -628,7 +688,12 @@ def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> t
         page = browser.new_page(viewport={"width": 816, "height": PRINT_PAGE_PX})
         page.goto(f"file://{html_path.resolve()}")
         page.wait_for_load_state("networkidle")
+        # Switch to print media FIRST, then block on webfonts being ready.
+        # The order matters: emulating print can trigger re-layout, and SVG
+        # <text> in particular falls back to a system mono if JetBrains Mono
+        # hasn't fully loaded *for the current media* before page.pdf() fires.
         page.emulate_media(media="print")
+        page.evaluate("async () => { await document.fonts.ready; }")
 
         m = page.evaluate(
             "() => ({"
