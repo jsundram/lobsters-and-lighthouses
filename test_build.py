@@ -401,6 +401,21 @@ class TestBuild:
         assert "apple-touch-icon" in content
         assert "data:image/svg+xml" in content
 
+    def test_share_preview_tags_present(self):
+        """OG + Twitter Card tags drive the rich link preview when this URL
+        is texted (iMessage, Messages/RCS, Slack…). The og:image URL must be
+        absolute or iMessage's scraper rejects it."""
+        out = build.build()
+        content = out.read_text()
+        cfg = build.load_config()
+        site = cfg["trip"]["site_url"]
+        assert f'property="og:url" content="{site}/"' in content
+        assert f'property="og:image" content="{site}/preview.png"' in content
+        assert 'property="og:image:width" content="1200"' in content
+        assert 'name="twitter:card" content="summary_large_image"' in content
+        # site_url must be absolute https for iMessage's link scraper
+        assert site.startswith("https://"), f"site_url not absolute: {site}"
+
 
 class TestPdf:
     """End-to-end: render_pdf produces exactly 2 letter pages at a sane scale."""

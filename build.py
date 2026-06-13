@@ -611,6 +611,13 @@ def build(date: dt.date | None = None, *, force_fetch: bool = False) -> Path:
 # ---------------------------------------------------------------------------
 
 PDF_OUTPUT = BUILD / "trip-handout.pdf"
+HANDOUT_PNG_OUTPUT = BUILD / "trip-handout.png"
+PREVIEW_OUTPUT = BUILD / "preview.png"
+
+# 1.91:1 — the de facto aspect for Open Graph / Twitter Card hero images.
+# iMessage, Google Messages (RCS), WhatsApp, Signal, Slack, Twitter, Facebook
+# all crop link-preview images to roughly this size.
+PREVIEW_W, PREVIEW_H = 1200, 630
 
 # 8.5 × 11 inches at Chromium's 96 dpi.
 PRINT_PAGE_PX = 1056
@@ -619,6 +626,19 @@ PRINT_PAGE_PX = 1056
 # content onto a third page. 0.985 is plenty empirically — leaves only ~15px
 # of whitespace per page at the bottom.
 SCALE_SAFETY = 0.97
+
+
+def _launch_chromium(p):
+    """Launch Chromium, installing the binary on first run if missing."""
+    try:
+        return p.chromium.launch()
+    except Exception:
+        import subprocess
+        subprocess.run(
+            [sys.executable, "-m", "playwright", "install", "chromium"],
+            check=True,
+        )
+        return p.chromium.launch()
 
 
 def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> tuple[int, float]:
@@ -631,21 +651,9 @@ def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> t
     """
     from playwright.sync_api import sync_playwright
 
-    def _launch(p):
-        try:
-            return p.chromium.launch()
-        except Exception:
-            # Browser binary not yet installed in this uvx env — pull it
-            import subprocess
-            subprocess.run(
-                [sys.executable, "-m", "playwright", "install", "chromium"],
-                check=True,
-            )
-            return p.chromium.launch()
-
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
-        browser = _launch(p)
+        browser = _launch_chromium(p)
         page = browser.new_page(viewport={"width": 816, "height": PRINT_PAGE_PX})
         page.goto(f"file://{html_path.resolve()}")
         page.wait_for_load_state("networkidle")
@@ -689,13 +697,90 @@ def render_pdf(html_path: Path, pdf_path: Path, *, expected_pages: int = 2) -> t
     return pages, scale
 
 
+# ---------------------------------------------------------------------------
+# Social-share preview PNG (Playwright screenshot of the page hero)
+# ---------------------------------------------------------------------------
+
+def render_preview_png(html_path: Path, png_path: Path) -> None:
+    """Screenshot the masthead → tides region of index.html as preview.png.
+
+    Loaded by link-preview scrapers (iMessage, Google Messages, Slack,
+    WhatsApp…) via og:image when the URL is texted. The .page CSS is overridden
+    so the centered card expands to fill the 1200px viewport edge-to-edge;
+    everything below the tide chart is hidden so the 1200×630 clip lands on a
+    clean composition.
+    """
+    from playwright.sync_api import sync_playwright
+
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as p:
+        browser = _launch_chromium(p)
+        # device_scale_factor=2 → physically 2400×1260 pixels behind the
+        # 1200×630 CSS viewport. iMessage downsamples to a thumbnail anyway,
+        # but desktop Slack / Twitter benefit from the extra crispness.
+        page = browser.new_page(
+            viewport={"width": PREVIEW_W, "height": PREVIEW_H},
+            device_scale_factor=2,
+        )
+        page.goto(f"file://{html_path.resolve()}")
+        page.wait_for_load_state("networkidle")
+        page.evaluate("async () => { await document.fonts.ready; }")
+        page.add_style_tag(content="""
+            html, body { margin: 0 !important; padding: 0 !important; }
+            .page {
+                width: 100% !important; max-width: 100% !important;
+                min-height: 0 !important; margin: 0 !important;
+                padding: 26px 56px !important; box-shadow: none !important;
+            }
+            /* Everything past the tide chart is irrelevant to the hero crop,
+               but the route-block and colophon would otherwise stretch the
+               document tall and slow the screenshot. Hide them. The section
+               heading + first itinerary card stay visible so the bottom
+               ~150px of the 1200×630 frame teases the content. */
+            .route-block, .colophon { display: none !important; }
+            /* Trim the first stop's padding so its card peeks into frame
+               without dominating it. */
+            .timeline .stop:not(:first-child) { display: none !important; }
+        """)
+        page.screenshot(
+            path=str(png_path),
+            clip={"x": 0, "y": 0, "width": PREVIEW_W, "height": PREVIEW_H},
+        )
+        browser.close()
+
+
+# ---------------------------------------------------------------------------
+# Handout PNG (rasterized page 1 of trip-handout.pdf)
+# ---------------------------------------------------------------------------
+
+# 144 dpi → 1224×1584 PNG. Reproducing Chromium's print auto-fit in a screenshot
+# is fiddly (CSS transform shrinks .page horizontally, leaving paper-color
+# whitespace to the right), so rasterizing the already-correct PDF is both
+# simpler and pixel-perfect against the printed sheet.
+HANDOUT_PNG_DPI = 144
+
+
+def render_handout_png(pdf_path: Path, png_path: Path, *, dpi: int = HANDOUT_PNG_DPI) -> None:
+    """Rasterize page 1 of trip-handout.pdf to PNG using pypdfium2.
+
+    Output matches the printed front of the sheet exactly — same letter
+    proportions, same auto-fit scale, no surrounding whitespace.
+    """
+    import pypdfium2 as pdfium
+
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    pdf = pdfium.PdfDocument(str(pdf_path))
+    bitmap = pdf[0].render(scale=dpi / 72)
+    bitmap.to_pil().save(str(png_path))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build build/index.html (and optionally a PDF)")
     parser.add_argument("--date", help="Override trip date (YYYY-MM-DD)")
     parser.add_argument("--force-fetch", action="store_true",
                         help="Re-fetch NOAA tide data even if cached")
     parser.add_argument("--no-pdf", action="store_true",
-                        help="Skip the PDF render step (fast iteration)")
+                        help="Skip the PDF + preview render steps (fast iteration)")
     args = parser.parse_args()
     date = dt.date.fromisoformat(args.date) if args.date else None
     out = build(date=date, force_fetch=args.force_fetch)
@@ -704,6 +789,10 @@ def main() -> int:
         pages, scale = render_pdf(out, PDF_OUTPUT)
         print(f"Wrote {PDF_OUTPUT} ({PDF_OUTPUT.stat().st_size:,} bytes, "
               f"{pages} pages, scale={scale:.3f})")
+        render_handout_png(PDF_OUTPUT, HANDOUT_PNG_OUTPUT)
+        print(f"Wrote {HANDOUT_PNG_OUTPUT} ({HANDOUT_PNG_OUTPUT.stat().st_size:,} bytes)")
+        render_preview_png(out, PREVIEW_OUTPUT)
+        print(f"Wrote {PREVIEW_OUTPUT} ({PREVIEW_OUTPUT.stat().st_size:,} bytes)")
     return 0
 
 

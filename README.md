@@ -4,7 +4,7 @@ A one-sheet, in-car handout for a Maine coast day trip. Renders as both a
 self-contained HTML page (works offline once loaded) and a two-page letter
 PDF (front + back of a sheet of paper).
 
-![Page 1 preview](preview.png)
+![Page 1 preview](build/trip-handout.png)
 
 ## What's in it
 

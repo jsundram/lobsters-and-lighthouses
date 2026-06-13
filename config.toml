@@ -8,6 +8,10 @@ date = "2026-06-22"                  # YYYY-MM-DD — the one knob most edits wi
 title = "Lobsters & Lighthouses"
 short_label = "🍦🦞"                  # iOS/Android home-screen label (kept short)
 description = "Southern Maine coast day trip — 10 stops, 255 miles, lobster + ice cream included."
+# Absolute base URL where the build is published. Used to build the absolute
+# og:url and og:image URLs that iMessage / Messages / WhatsApp need for the
+# rich-link preview when this URL is texted. No trailing slash.
+site_url = "https://lobsters-lighthouses.netlify.app"
 
 [location]
 # Tide station — NOAA #8419399 sits at Cape Neddick (Nubble Light) and covers the
